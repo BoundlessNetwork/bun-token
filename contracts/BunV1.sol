@@ -113,7 +113,7 @@ contract BunV1 is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable, E
     }
 
     //
-    function multiTransfers(address[] memory recipients, uint256[] memory amount) public returns (bool) {
+    function batchTransfers(address[] memory recipients, uint256[] memory amount) public returns (bool) {
         require(recipients.length == amount.length, "BN: invalid array");
         for (uint256 i = 0; i < recipients.length; i++) {
             require(transfer(recipients[i], amount[i]), "BN: failed transfer");
@@ -121,7 +121,7 @@ contract BunV1 is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable, E
         return true;
     }
 
-    function multiTransferFroms(address[] memory senders, address[] memory recipients, uint256[] memory amount) public returns (bool) {
+    function batchTransferFroms(address[] memory senders, address[] memory recipients, uint256[] memory amount) public returns (bool) {
         require(senders.length == recipients.length && recipients.length == amount.length, "BN: invalid array");
         for (uint256 i = 0; i < senders.length; i++) {
             require(transferFrom(senders[i], recipients[i], amount[i]), "BN: failed transfer");
