@@ -23,10 +23,10 @@ contract LockedToken {
     event Revoke(address donor, uint256 amount);
 
     constructor(address pToken, address _donor, address _beneficiary, uint256 _releaseTime, bool _revocable, address _system) {
-        require(_donor != address(0), "LockedToken: donor is zero address");
-        require(_beneficiary != address(0), "LockedToken: beneficiary is zero address");
-        require(_system != address(0), "LockedToken: system is zero address");
-        require(_releaseTime > block.timestamp, "LockedToken: release time is before current time");
+        require(_donor != address(0), "Locked: donor is zero address");
+        require(_beneficiary != address(0), "Locked: beneficiary is zero address");
+        require(_system != address(0), "Locked: system is zero address");
+        require(_releaseTime > block.timestamp, "Locked: invalid release time");
 
         _token = IERC20(pToken);
         donor = _donor;
@@ -49,21 +49,21 @@ contract LockedToken {
     }
 
     function revoke() public {
-        require(revocable, "LockedToken: tokens are not revocable");
-        require((msg.sender == donor) || (msg.sender == system), "LockedToken: only donor|system can revoke");
+        require(revocable, "Locked: not revocable");
+        require((msg.sender == donor) || (msg.sender == system), "Locked: donor or system required");
 
         uint256 amount = _token.balanceOf(address(this));
-        require(amount > 0, "LockedToken: no tokens to revoke");
+        require(amount > 0, "Locked: no tokens to revoke");
 
         _token.safeTransfer(donor, amount);
         emit Revoke(donor, amount);
     }
 
     function claim() public {
-        require(block.timestamp >= releaseTime, "LockedToken: current time is before release time");
+        require(block.timestamp >= releaseTime, "Locked: time is not yet");
 
         uint256 amount = _token.balanceOf(address(this));
-        require(amount > 0, "LockedToken: There is no tokens to claim");
+        require(amount > 0, "Locked: no tokens to claim");
 
         _token.safeTransfer(beneficiary, amount);
         emit Claim(beneficiary, amount, releaseTime);
@@ -73,8 +73,6 @@ contract LockedToken {
 contract BunV1 is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable, ERC20Permit {
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
-
-    mapping(address => bool) private _blacklist;
 
     constructor()
     ERC20("BUNetwork", "BUN")
@@ -94,7 +92,7 @@ contract BunV1 is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable, E
     }
 
     function renounceOwnership() public view override onlyOwner {
-        revert("BUN: renounceOwnership is disabled");
+        revert("BUN: disabled");
     }
 
     function pause() public onlyRole(PAUSER_ROLE) {
@@ -116,26 +114,26 @@ contract BunV1 is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable, E
 
     //
     function multiTransfers(address[] memory recipients, uint256[] memory amount) public returns (bool) {
-        require(recipients.length == amount.length, "BUN: Input arrays must be the same length");
+        require(recipients.length == amount.length, "BUN: Input arrays are not valid");
         for (uint256 i = 0; i < recipients.length; i++) {
-            require(transfer(recipients[i], amount[i]), "BUN: failed to transfer");
+            require(transfer(recipients[i], amount[i]), "BUN: failed transfer");
         }
         return true;
     }
 
     function multiTransferFroms(address[] memory senders, address[] memory recipients, uint256[] memory amount) public returns (bool) {
-        require(senders.length == recipients.length && recipients.length == amount.length, "BUN: Input arrays must be the same length");
+        require(senders.length == recipients.length && recipients.length == amount.length, "BUN: Input arrays are not valid");
         for (uint256 i = 0; i < senders.length; i++) {
-            require(transferFrom(senders[i], recipients[i], amount[i]), "BUN: failed to transfer");
+            require(transferFrom(senders[i], recipients[i], amount[i]), "BUN: failed transfer");
         }
         return true;
     }
 
     // token lock and claim
-    function _utilDiffTime(uint256 _checkTimestamp) public view returns (uint256, uint256) {
-        require(_checkTimestamp > block.timestamp, "BUN: checkTime is before current time");
+    function _utilDiffTime(uint256 _checkTs) public view returns (uint256, uint256) {
+        require(_checkTs > block.timestamp, "BUN: not yet");
         uint256 nowDayTime = block.timestamp;
-        uint256 chkDayTime = _checkTimestamp;
+        uint256 chkDayTime = _checkTs;
         uint256 nowDay = nowDayTime / 86400;
         uint256 chkDay = chkDayTime / 86400;
         return (chkDay - nowDay, chkDayTime - nowDayTime);
@@ -177,7 +175,7 @@ contract BunV1 is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable, E
 
     // admin operations
     function addAdmin(address _account) public onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
-        require(_account != address(0), "BUN: add admin is not permitted to add the zero address");
+        require(_account != address(0), "BUN: zero address");
         grantRole(DEFAULT_ADMIN_ROLE, _account); // Admin
         grantRole(PAUSER_ROLE, _account); // Admin
         grantRole(SYSTEM_ROLE, _account); // System
@@ -190,7 +188,7 @@ contract BunV1 is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable, E
     }
 
     function revokeAdmin(address _account) public onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
-        require(_account != owner(), "BUN: Owner can't revoke AdminRole");
+        require(_account != owner(), "BUN: Owner can't revoke himself");
         revokeRole(PAUSER_ROLE, _account); // Admin
         revokeRole(SYSTEM_ROLE, _account); // System
         revokeRole(DEFAULT_ADMIN_ROLE, _account); // Admin
@@ -199,6 +197,6 @@ contract BunV1 is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable, E
     }
 
     /* events */
-    event TokenLock(address indexed token, address indexed donor, address indexed beneficiary, uint256 amount, uint256 releaseTime, bool _revocable, address _system, uint256 logTime);
+    event TokenLock(address indexed lockedToken, address indexed donor, address indexed beneficiary, uint256 amount, uint256 releaseTime, bool revocable, address system, uint256 logTime);
     event RoleChanged(string indexed role, address indexed granter, address indexed grantee, uint256 logTime);
 }
