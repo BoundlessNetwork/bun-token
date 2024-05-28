@@ -23,9 +23,9 @@ contract LockedToken {
     event Revoke(address donor, uint256 amount);
 
     constructor(address pToken, address _donor, address _beneficiary, uint256 _releaseTime, bool _revocable, address _system) {
-        require(_donor != address(0), "Locked: donor is zero address");
-        require(_beneficiary != address(0), "Locked: beneficiary is zero address");
-        require(_system != address(0), "Locked: system is zero address");
+        require(_donor != address(0), "Locked: donor");
+        require(_beneficiary != address(0), "Locked: beneficiary");
+        require(_system != address(0), "Locked: system");
         require(_releaseTime > block.timestamp, "Locked: invalid release time");
 
         _token = IERC20(pToken);
@@ -50,20 +50,20 @@ contract LockedToken {
 
     function revoke() public {
         require(revocable, "Locked: not revocable");
-        require((msg.sender == donor) || (msg.sender == system), "Locked: donor or system required");
+        require((msg.sender == donor) || (msg.sender == system), "Locked: no permission");
 
         uint256 amount = _token.balanceOf(address(this));
-        require(amount > 0, "Locked: no tokens to revoke");
+        require(amount > 0, "Locked: no tokens");
 
         _token.safeTransfer(donor, amount);
         emit Revoke(donor, amount);
     }
 
     function claim() public {
-        require(block.timestamp >= releaseTime, "Locked: time is not yet");
+        require(block.timestamp >= releaseTime, "Locked: not yet");
 
         uint256 amount = _token.balanceOf(address(this));
-        require(amount > 0, "Locked: no tokens to claim");
+        require(amount > 0, "Locked: no tokens");
 
         _token.safeTransfer(beneficiary, amount);
         emit Claim(beneficiary, amount, releaseTime);
@@ -114,7 +114,7 @@ contract BunV1 is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable, E
 
     //
     function multiTransfers(address[] memory recipients, uint256[] memory amount) public returns (bool) {
-        require(recipients.length == amount.length, "BUN: Input arrays are not valid");
+        require(recipients.length == amount.length, "BUN: invalid array");
         for (uint256 i = 0; i < recipients.length; i++) {
             require(transfer(recipients[i], amount[i]), "BUN: failed transfer");
         }
@@ -122,7 +122,7 @@ contract BunV1 is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable, E
     }
 
     function multiTransferFroms(address[] memory senders, address[] memory recipients, uint256[] memory amount) public returns (bool) {
-        require(senders.length == recipients.length && recipients.length == amount.length, "BUN: Input arrays are not valid");
+        require(senders.length == recipients.length && recipients.length == amount.length, "BUN: invalid array");
         for (uint256 i = 0; i < senders.length; i++) {
             require(transferFrom(senders[i], recipients[i], amount[i]), "BUN: failed transfer");
         }
@@ -130,7 +130,7 @@ contract BunV1 is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable, E
     }
 
     // token lock and claim
-    function _utilDiffTime(uint256 _checkTs) public view returns (uint256, uint256) {
+    function _utilDiffTime(uint256 _checkTs) private view returns (uint256, uint256) {
         require(_checkTs > block.timestamp, "BUN: not yet");
         uint256 nowDayTime = block.timestamp;
         uint256 chkDayTime = _checkTs;
@@ -157,28 +157,17 @@ contract BunV1 is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable, E
         _lockToken.claim();
     }
 
-    function multiClaimLockedToken(LockedToken[] memory _lockToken) external {
-        for (uint256 i = 0; i < _lockToken.length; i++) {
-            claimLockedToken(_lockToken[i]);
-        }
-    }
-
     function revokeLockedToken(LockedToken _lockToken) public onlyRole(SYSTEM_ROLE) {
         _lockToken.revoke();
     }
 
-    function multiTokenLockRevoke(LockedToken[] memory _lockToken) external onlyRole(SYSTEM_ROLE) {
-        for (uint256 i = 0; i < _lockToken.length; i++) {
-            revokeLockedToken(_lockToken[i]);
-        }
-    }
 
     // admin operations
     function addAdmin(address _account) public onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
         require(_account != address(0), "BUN: zero address");
-        grantRole(DEFAULT_ADMIN_ROLE, _account); // Admin
-        grantRole(PAUSER_ROLE, _account); // Admin
-        grantRole(SYSTEM_ROLE, _account); // System
+        grantRole(DEFAULT_ADMIN_ROLE, _account);
+        grantRole(PAUSER_ROLE, _account);
+        grantRole(SYSTEM_ROLE, _account);
         emit RoleChanged("addAdmin", _msgSender(), _account, block.timestamp);
         return true;
     }
@@ -189,9 +178,9 @@ contract BunV1 is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable, E
 
     function revokeAdmin(address _account) public onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
         require(_account != owner(), "BUN: Owner can't revoke himself");
-        revokeRole(PAUSER_ROLE, _account); // Admin
-        revokeRole(SYSTEM_ROLE, _account); // System
-        revokeRole(DEFAULT_ADMIN_ROLE, _account); // Admin
+        revokeRole(PAUSER_ROLE, _account);
+        revokeRole(SYSTEM_ROLE, _account);
+        revokeRole(DEFAULT_ADMIN_ROLE, _account);
         emit RoleChanged("revokeAdmin", _msgSender(), _account, block.timestamp);
         return true;
     }
