@@ -20,10 +20,24 @@ TBD
 
 ## Contract
 
-### Build
+### Dependencies
  * OpenZeppelin Contracts ^5.0.0
  * solidity : ^0.8.20
 
 ### files
  * BunV1.sol  - bun token contract
 
+
+
+## Compile contract
+
+## compile contract
+``
+$ hardhat compile
+``
+
+## clean 
+
+``
+ $ hardhat clean
+``
