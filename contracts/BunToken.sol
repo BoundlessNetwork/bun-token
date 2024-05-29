@@ -70,7 +70,7 @@ contract LockedToken {
     }
 }
 
-contract BunV1 is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable, ERC20Permit {
+contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable, ERC20Permit {
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
 
@@ -83,7 +83,7 @@ contract BunV1 is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable, E
         _grantRole(PAUSER_ROLE, _msgSender()); // Admin
         _grantRole(SYSTEM_ROLE, _msgSender()); // System
 
-        _mint(msg.sender, 1000000000 * 10 ** decimals());
+        _mint(msg.sender, 1e9 * 10 ** decimals()); // 1,000,000,000 BUN
     }
 
     function transferOwnership(address _account) public override onlyOwner {
