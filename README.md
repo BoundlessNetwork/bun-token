@@ -25,7 +25,7 @@ TBD
  * solidity : ^0.8.20
 
 ### files
- * BunV1.sol  - bun token contract
+ * BunToken.sol  - bun token contract
 
 
 
