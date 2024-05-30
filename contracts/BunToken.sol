@@ -80,8 +80,8 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
     ERC20Permit("BUNetwork")
     {
         _grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
-        _grantRole(PAUSER_ROLE, _msgSender()); // Admin
-        _grantRole(SYSTEM_ROLE, _msgSender()); // System
+        _grantRole(PAUSER_ROLE, _msgSender());
+        _grantRole(SYSTEM_ROLE, _msgSender());
 
         _mint(msg.sender, 1e9 * 10 ** decimals()); // 1,000,000,000 BUN
     }
@@ -145,8 +145,8 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
         return (address(_lockToken.token()), _lockToken.donor(), _lockToken.beneficiary(), _lockToken.releaseTime(), _lockToken.revocable(), _lockToken.balanceOf(), _diffDay);
     }
 
-    function lockToken(address _donor, address _beneficiary, uint256 _amount, uint256 _duration, uint256 _durationUnit, bool _revocable) public onlyRole(SYSTEM_ROLE) returns (LockedToken) {
-        uint256 releaseTime = block.timestamp + (_duration * _durationUnit);
+    function lockToken(address _donor, address _beneficiary, uint256 _amount, uint256 _duration, uint256 _durationUnitInSec, bool _revocable) public onlyRole(SYSTEM_ROLE) returns (LockedToken) {
+        uint256 releaseTime = block.timestamp + (_duration * _durationUnitInSec);
         LockedToken lockedToken = new LockedToken(address(this), _donor, _beneficiary, releaseTime, _revocable, address(this));
         _transfer(_msgSender(), address(lockedToken), _amount);
         emit TokenLock(address(lockedToken), _donor, _beneficiary, lockedToken.balanceOf(), releaseTime, _revocable, address(this), block.timestamp);
