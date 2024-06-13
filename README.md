@@ -14,7 +14,7 @@ TBD
 * Burnable
 * Pausable
 * Access Control
-  * admin role - admin operations
+  * admin role - admin operations(add role user or admin)
   * pause role - pause contract
   * system role - lock, revoke lock
 
@@ -31,13 +31,17 @@ TBD
 
 ## Compile contract
 
-## compile contract
+### compile
 ``
 $ hardhat compile
 ``
 
-## clean 
+then, json file for contract will be generated in artifacts/contracts/{BunToken.sol}.
+
+### clean 
 
 ``
  $ hardhat clean
 ``
+
+Then, artifacts directory will be removed.

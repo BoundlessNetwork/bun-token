@@ -113,7 +113,7 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
     }
 
     //
-    function batchTransfers(address[] calldata recipients, uint256[] calldata amount) public returns (bool) {
+    function batchTransfer(address[] calldata recipients, uint256[] calldata amount) public returns (bool) {
         require(recipients.length == amount.length, "BN: invalid array");
         for (uint256 i = 0; i < 100; i++) {
             require(transfer(recipients[i], amount[i]), "BN: failed transfer");
@@ -121,7 +121,7 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
         return true;
     }
 
-    function batchTransferFroms(address[] calldata senders, address[] calldata recipients, uint256[] calldata amount) public returns (bool) {
+    function batchTransferFrom(address[] calldata senders, address[] calldata recipients, uint256[] calldata amount) public returns (bool) {
         require(senders.length == recipients.length && recipients.length == amount.length, "BN: invalid array");
         for (uint256 i = 0; i < 100; i++) {
             require(transferFrom(senders[i], recipients[i], amount[i]), "BN: failed transfer");
