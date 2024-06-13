@@ -112,7 +112,7 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
         super._update(from, to, value);
     }
 
-    //
+    // this required to check balance in off-chain before run tx
     function batchTransfer(address[] calldata recipients, uint256[] calldata amount) public returns (bool) {
         require(recipients.length == amount.length, "BN: invalid array");
         for (uint256 i = 0; i < 100; i++) {
@@ -121,6 +121,7 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
         return true;
     }
 
+    // this required to check balance and allowance in off-chain before run tx
     function batchTransferFrom(address[] calldata senders, address[] calldata recipients, uint256[] calldata amount) public returns (bool) {
         require(senders.length == recipients.length && recipients.length == amount.length, "BN: invalid array");
         for (uint256 i = 0; i < 100; i++) {
