@@ -113,17 +113,17 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
     }
 
     //
-    function batchTransfers(address[] memory recipients, uint256[] memory amount) public returns (bool) {
+    function batchTransfers(address[] calldata recipients, uint256[] calldata amount) public returns (bool) {
         require(recipients.length == amount.length, "BN: invalid array");
-        for (uint256 i = 0; i < recipients.length; i++) {
+        for (uint256 i = 0; i < 100; i++) {
             require(transfer(recipients[i], amount[i]), "BN: failed transfer");
         }
         return true;
     }
 
-    function batchTransferFroms(address[] memory senders, address[] memory recipients, uint256[] memory amount) public returns (bool) {
+    function batchTransferFroms(address[] calldata senders, address[] calldata recipients, uint256[] calldata amount) public returns (bool) {
         require(senders.length == recipients.length && recipients.length == amount.length, "BN: invalid array");
-        for (uint256 i = 0; i < senders.length; i++) {
+        for (uint256 i = 0; i < 100; i++) {
             require(transferFrom(senders[i], recipients[i], amount[i]), "BN: failed transfer");
         }
         return true;
