@@ -86,9 +86,6 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
         _mint(msg.sender, 1e9 * 10 ** decimals()); // 1,000,000,000 BUN
     }
 
-    function _min(uint256 a, uint256 b) internal pure returns (uint256) {
-        return a <= b ? a : b;
-    }
 
     function transferOwnership(address _account) public override onlyOwner {
         addAdmin(_account);
@@ -120,8 +117,7 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
     function batchTransfer(address[] calldata recipients, uint256[] calldata amount) public returns (bool) {
         require(recipients.length == amount.length, "BN: invalid array");
         require(recipients.length <= 100);
-        uint256 count = _min(recipients.length, 100);
-        for (uint256 i = 0; i < count; i++) {
+        for (uint256 i = 0; i < recipients.length; i++) {
             require(transfer(recipients[i], amount[i]), "BN: failed transfer");
         }
         return true;
@@ -131,8 +127,7 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
     function batchTransferFrom(address[] calldata senders, address[] calldata recipients, uint256[] calldata amount) public returns (bool) {
         require(senders.length == recipients.length && recipients.length == amount.length, "BN: invalid array");
         require(senders.length <= 100);
-        uint256 count = _min(recipients.length, 100);
-        for (uint256 i = 0; i < count; i++) {
+        for (uint256 i = 0; i < senders.length; i++) {
             require(transferFrom(senders[i], recipients[i], amount[i]), "BN: failed transfer");
         }
         return true;
