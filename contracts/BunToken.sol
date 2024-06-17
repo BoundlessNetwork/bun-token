@@ -128,7 +128,7 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
         require(senders.length <= 100);
         require(senders.length == recipients.length && recipients.length == amount.length, "BN: invalid array");
         for (uint256 i = 0; i < senders.length; i++) {
-            require(transferFrom(senders[i], recipients[i], amount[i]), "BN: failed transfer");
+            require(transferFrom(senders[i], recipients[i], amount[i]), "BN: failed transferFrom");
         }
         return true;
     }
@@ -166,8 +166,8 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
     }
 
 
-    // admin operations
-    function addAdmin(address _account) public onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
+    // admin operations by only owner
+    function addAdmin(address _account) public onlyOwner returns (bool) {
         require(_account != address(0), "BN: zero address");
         grantRole(DEFAULT_ADMIN_ROLE, _account);
         grantRole(PAUSER_ROLE, _account);
