@@ -113,7 +113,7 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
         super._update(from, to, value);
     }
 
-    // this required to check balance in off-chain before run tx
+    // this required to check balance in off-chain before run tx, max 100 internal tx
     function batchTransfer(address[] calldata recipients, uint256[] calldata amount) public returns (bool) {
         require(recipients.length == amount.length, "BN: invalid array");
         require(recipients.length <= 100);
@@ -123,7 +123,7 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
         return true;
     }
 
-    // this required to check balance and allowance in off-chain before run tx
+    // this required to check balance and allowance in off-chain before run tx, max 100 internal tx
     function batchTransferFrom(address[] calldata senders, address[] calldata recipients, uint256[] calldata amount) public returns (bool) {
         require(senders.length == recipients.length && recipients.length == amount.length, "BN: invalid array");
         require(senders.length <= 100);
@@ -181,7 +181,7 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
     }
 
     function revokeAdmin(address _account) public onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
-        require(_account != owner(), "BN: Owner can't revoke himself");
+        require(_account != owner(), "BN: can't revoke owner's role");
         revokeRole(PAUSER_ROLE, _account);
         revokeRole(SYSTEM_ROLE, _account);
         revokeRole(DEFAULT_ADMIN_ROLE, _account);
