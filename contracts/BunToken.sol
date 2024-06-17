@@ -71,21 +71,16 @@ contract LockedToken {
 }
 
 contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable, ERC20Permit {
-    bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
 
-    constructor()
+    constructor(address initialOwner)
     ERC20("BUNetwork", "BUN")
-    Ownable(_msgSender())
+    Ownable(initialOwner)
     ERC20Permit("BUNetwork")
     {
-        _grantRole(DEFAULT_ADMIN_ROLE, _msgSender());
-        _grantRole(PAUSER_ROLE, _msgSender());
-        _grantRole(SYSTEM_ROLE, _msgSender());
-
-        _mint(msg.sender, 1e9 * 10 ** decimals()); // 1,000,000,000 BUN
+        _mint(initialOwner, 1e9 * 10 ** decimals()); // 1,000,000,000 BUN
+        transferOwnership(initialOwner);
     }
-
 
     function transferOwnership(address _account) public override onlyOwner {
         addAdmin(_account);
@@ -96,11 +91,11 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
         revert("BN: disabled");
     }
 
-    function pause() public onlyRole(PAUSER_ROLE) {
+    function pause() public onlyRole(DEFAULT_ADMIN_ROLE) {
         _pause();
     }
 
-    function unpause() public onlyRole(PAUSER_ROLE) {
+    function unpause() public onlyRole(DEFAULT_ADMIN_ROLE) {
         _unpause();
     }
 
@@ -113,7 +108,7 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
         super._update(from, to, value);
     }
 
-    // this required to check balance in off-chain before run tx, max 100 internal tx
+    // This required to check balance in off-chain before run tx, limited maximum 100 internal tx
     function batchTransfer(address[] calldata recipients, uint256[] calldata amount) public returns (bool) {
         require(recipients.length <= 100);
         require(recipients.length == amount.length, "BN: invalid array");
@@ -123,7 +118,7 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
         return true;
     }
 
-    // this required to check balance and allowance in off-chain before run tx, max 100 internal tx
+    // This required to check balance and allowance in off-chain before run tx, limited maximum 100 internal tx
     function batchTransferFrom(address[] calldata senders, address[] calldata recipients, uint256[] calldata amount) public returns (bool) {
         require(senders.length <= 100);
         require(senders.length == recipients.length && recipients.length == amount.length, "BN: invalid array");
@@ -166,11 +161,10 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
     }
 
 
-    // admin operations by only owner
+    // addAdmin can be performed by only owner
     function addAdmin(address _account) public onlyOwner returns (bool) {
         require(_account != address(0), "BN: zero address");
         grantRole(DEFAULT_ADMIN_ROLE, _account);
-        grantRole(PAUSER_ROLE, _account);
         grantRole(SYSTEM_ROLE, _account);
         emit RoleChanged("addAdmin", _msgSender(), _account, block.timestamp);
         return true;
@@ -182,7 +176,6 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
 
     function revokeAdmin(address _account) public onlyRole(DEFAULT_ADMIN_ROLE) returns (bool) {
         require(_account != owner(), "BN: can't revoke owner's role");
-        revokeRole(PAUSER_ROLE, _account);
         revokeRole(SYSTEM_ROLE, _account);
         revokeRole(DEFAULT_ADMIN_ROLE, _account);
         emit RoleChanged("revokeAdmin", _msgSender(), _account, block.timestamp);
