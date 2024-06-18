@@ -75,7 +75,7 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
 
     constructor(address initialOwner)
     ERC20("BUNetwork", "BUN")
-    Ownable(initialOwner)
+    Ownable(_msgSender())
     ERC20Permit("BUNetwork")
     {
         _mint(initialOwner, 1e9 * 10 ** decimals()); // 1,000,000,000 BUN
@@ -164,8 +164,8 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
     // addAdmin can be performed by only owner
     function addAdmin(address _account) public onlyOwner returns (bool) {
         require(_account != address(0), "BN: zero address");
-        grantRole(DEFAULT_ADMIN_ROLE, _account);
-        grantRole(SYSTEM_ROLE, _account);
+        _grantRole(DEFAULT_ADMIN_ROLE, _account);
+        _grantRole(SYSTEM_ROLE, _account);
         emit RoleChanged("addAdmin", _msgSender(), _account, block.timestamp);
         return true;
     }
