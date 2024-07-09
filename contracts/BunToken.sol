@@ -74,9 +74,9 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
     bytes32 public constant SYSTEM_ROLE = keccak256("SYSTEM_ROLE");
 
     constructor(address initialOwner)
-    ERC20("BUNetwork", "BUN")
+    ERC20("Boundless Network", "BUN")
     Ownable(_msgSender())
-    ERC20Permit("BUNetwork")
+    ERC20Permit("Boundless Network")
     {
         _mint(initialOwner, 1e9 * 10 ** decimals()); // 1,000,000,000 BUN
         transferOwnership(initialOwner);
@@ -108,9 +108,8 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
         super._update(from, to, value);
     }
 
-    // This required to check balance in off-chain before run tx, limited maximum 100 internal tx
+    // This required to check balance in off-chain before run tx
     function batchTransfer(address[] calldata recipients, uint256[] calldata amount) public returns (bool) {
-        require(recipients.length <= 100);
         require(recipients.length == amount.length, "BN: invalid array");
         for (uint256 i = 0; i < recipients.length; i++) {
             require(transfer(recipients[i], amount[i]), "BN: failed transfer");
@@ -118,9 +117,8 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
         return true;
     }
 
-    // This required to check balance and allowance in off-chain before run tx, limited maximum 100 internal tx
+    // This required to check balance and allowance in off-chain before run tx
     function batchTransferFrom(address[] calldata senders, address[] calldata recipients, uint256[] calldata amount) public returns (bool) {
-        require(senders.length <= 100);
         require(senders.length == recipients.length && recipients.length == amount.length, "BN: invalid array");
         for (uint256 i = 0; i < senders.length; i++) {
             require(transferFrom(senders[i], recipients[i], amount[i]), "BN: failed transferFrom");
@@ -128,7 +126,7 @@ contract BunToken is ERC20, ERC20Burnable, ERC20Pausable, AccessControl, Ownable
         return true;
     }
 
-    // token lock and claim
+    /* token lock and claim */
     function _utilDiffTime(uint256 _checkTs) private view returns (uint256, uint256) {
         require(_checkTs > block.timestamp, "BN: not yet");
         uint256 nowDayTime = block.timestamp;

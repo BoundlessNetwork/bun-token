@@ -45,3 +45,8 @@ then, json file for contract will be generated in artifacts/contracts/{BunToken.
 ``
 
 Then, artifacts directory will be removed.
+
+## Flatten contract
+``
+$ hardhat flatten contracts/BunToken.sol > flatten-token.sol
+``
